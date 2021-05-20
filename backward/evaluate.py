@@ -1,7 +1,7 @@
 from protoclass import proto
 
 
-def make_fact(ctx, args):
+def make_fact(ctx, args, ask):
     for key in ctx:
         val = ctx[key]
         val.data = False
@@ -34,11 +34,11 @@ def init_rule(ctx, lhs, rhs):
         assert False
 
 
-def make_rule(ctx, args):
+def make_rule(ctx, args, ask):
     init_rule(ctx, args.data[0], args.data[1])
 
 
-def eval_atom(ctx, atom):
+def eval_atom(ctx, atom, ask):
     if atom.data in ctx:
         val = ctx[atom.data]
         if val.seen:
@@ -47,26 +47,36 @@ def eval_atom(ctx, atom):
             return False
         else:
             val.seen = True
-            val.data = eval_node(ctx, val.rule)
+            val.data = eval_node(ctx, val.rule, ask)
             return val.data
     else:
-        return False
+        print("Answer Yes (y) or No (n):")
+        
+        val = input(ask[atom.data])
+        
+        assert val == "y" or val == "n", "You must answer Yes (y) or No (n)."
+        
+        val = True if val == "y" else False
+
+        ctx[atom.data] = proto(data=val, seen=True, rule=None)
+
+        return ctx[atom.data].data
 
 
-def eval_not(ctx, arg):
-    return not eval_node(ctx, arg.data)
+def eval_not(ctx, arg, ask):
+    return not eval_node(ctx, arg.data, ask)
 
 
-def eval_and(ctx, arg):
-    return eval_node(ctx, arg.data[0]) and eval_node(ctx, arg.data[1])
+def eval_and(ctx, arg, ask):
+    return eval_node(ctx, arg.data[0], ask) and eval_node(ctx, arg.data[1], ask)
 
 
-def eval_or(ctx, arg):
-    return eval_node(ctx, arg.data[0]) or eval_node(ctx, arg.data[1])
+def eval_or(ctx, arg, ask):
+    return eval_node(ctx, arg.data[0], ask) or eval_node(ctx, arg.data[1], ask)
 
 
-def eval_xor(ctx, arg):
-    return eval_node(ctx, arg.data[0]) != eval_node(ctx, arg.data[1])
+def eval_xor(ctx, arg, ask):
+    return eval_node(ctx, arg.data[0], ask) != eval_node(ctx, arg.data[1], ask)
 
 
 NODE_DICT = {
@@ -82,9 +92,9 @@ NODE_DICT = {
 }
 
 
-def eval_node(ctx, node):
-    return NODE_DICT[node.kind](ctx, node)
+def eval_node(ctx, node, ask):
+    return NODE_DICT[node.kind](ctx, node, ask)
 
 
-def evaluate(ctx, tree):
-    return [eval_node(ctx, node) for node in tree]
+def evaluate(ctx, tree, ask):
+    return [eval_node(ctx, node, ask) for node in tree]
