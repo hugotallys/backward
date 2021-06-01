@@ -50,7 +50,7 @@ def eval_atom(ctx, atom, ask):
             val.data = eval_node(ctx, val.rule, ask)
             return val.data
     else:
-        print(">> Responda Sim (s) ou Não (n):\n<< ")
+        print(">> Responda Sim (s) ou Não (n):")
         
         val = input(ask[atom.data])
         
